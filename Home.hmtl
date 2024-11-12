@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Trends</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #result { margin-top: 20px; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+  <h1>Currency Pair Data</h1>
+  <label for="currencyPair">Currency Pair:</label>
+  <input type="text" id="currencyPair" placeholder="e.g., EUR/USD">
+  <button onclick="fetchCurrencyData()">Get Data</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function fetchCurrencyData() {
+      const currencyPair = document.getElementById('currencyPair').value;
+      const [fromCurrency, toCurrency] = currencyPair.toUpperCase().split('/');
+
+      if (!fromCurrency || !toCurrency) {
+        document.getElementById('result').innerHTML = "<p class='error'>Please enter a valid currency pair (e.g., EUR/USD).</p>";
+        return;
+      }
+
+      const apiKey = 'OYQA7NYOTP4I3BXY';
+      const url = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${fromCurrency}&to_currency=${toCurrency}&apikey=${apiKey}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data["Error Message"]) {
+          document.getElementById('result').innerHTML = "<p class='error'>Invalid API call. Please check the currency pair or API key.</p>";
+          return;
+        }
+
+        const rateData = data["Realtime Currency Exchange Rate"];
+        if (!rateData) {
+          document.getElementById('result').innerHTML = "<p class='error'>No data available for the given currency pair.</p>";
+          return;
+        }
+
+        const rate = rateData["5. Exchange Rate"];
+        const lastRefreshed = rateData["6. Last Refreshed"];
+        const bidPrice = rateData["8. Bid Price"];
+        const askPrice = rateData["9. Ask Price"];
+
+        document.getElementById('result').innerHTML = `
+          <h3>${fromCurrency}/${toCurrency} Exchange Rate</h3>
+          <p>Exchange Rate: ${rate}</p>
+          <p>Last Refreshed: ${lastRefreshed}</p>
+          <p>Bid Price: ${bidPrice}</p>
+          <p>Ask Price: ${askPrice}</p>
+        `;
+      } catch (error) {
+        document.getElementById('result').innerHTML = "<p class='error'>An error occurred while fetching data.</p>";
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
